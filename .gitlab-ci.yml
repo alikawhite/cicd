@@ -1,0 +1,58 @@
+stages:
+  - build
+  - style
+  - test
+  - deploy
+
+buildings:
+  stage: build
+  tags: 
+    - tag
+  script:
+    - cd src/cat/
+    - make s21_cat
+    - cd ../grep/
+    - make s21_grep
+  artifacts:
+    paths:
+      - src/cat/s21_cat
+      - src/grep/s21_grep
+    expire_in: 30 days
+  after_script:
+    - bash tg.sh
+
+check_style:
+  stage: style
+  tags:
+    - tag
+  script:
+    - cd src/cat/
+    - make style
+    - cd ../grep/
+    - make style
+  after_script:
+    - bash tg.sh
+
+tests:
+  stage: test
+  tags:
+    - tag
+  script:
+    - cd src/cat/
+    - make test
+    - cd ../grep/
+    - make test
+  rules:
+    - when: on_success
+  after_script:
+    - bash tg.sh
+
+deploy:
+  stage: deploy
+  tags:
+    - tag
+  script:
+    - chmod +x ./dep.sh
+    - bash dep.sh
+  after_script:
+    - bash tg.sh
